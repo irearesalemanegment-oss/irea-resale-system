@@ -1,0 +1,26 @@
+﻿  const handleSubmit = async (data, images = []) => {
+    setSubmitting(true);
+    try {
+      // Remove server-only fields that shouldn't be sent back
+      const { id, created_by, created_at, updated_at, developer_name, compound_name, created_by_name, ...cleanData } = data;
+      let unitId;
+      if (editingUnit) {
+        await unitsAPI.update(editingUnit.id, cleanData);
+        unitId = editingUnit.id;
+      } else {
+        const res = await unitsAPI.create(cleanData);
+        unitId = res.data.unit.id;
+      }
+      // Upload images if any
+      if (images && images.length > 0 && unitId) {
+        await imagesAPI.upload(unitId, images);
+      }
+      setShowForm(false);
+      setEditingUnit(null);
+      fetchData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save unit');
+    } finally {
+      setSubmitting(false);
+    }
+  };
